@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 30px 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            font-family: "Noto Serif SC", "楷体", KaiTi, serif;
+            color: #37352f;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        #poem {
+            font-size: 24px;
+            line-height: 1.7;
+            margin-bottom: 14px;
+            word-break: break-word;
+        }
+        #info {
+            font-size: 16px;
+            color: #9b9a97;
+        }
+        #loading {
+            font-size: 18px;
+            color: #9b9a97;
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载中的占位文字 -->
+    <div id="loading">推敲中…</div>
+    <!-- 诗句及信息区域，初始隐藏 -->
+    <div id="poem" style="display:none;"></div>
+    <div id="info" style="display:none;"></div>
+
+    <!-- 引入今日诗词 v2 SDK -->
+    <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script>
+    <script>
+        function showPoem(data) {
+            // 隐藏 loading，显示内容
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('poem').style.display = 'block';
+            document.getElementById('info').style.display = 'block';
+
+            // 填入诗句
+            document.getElementById('poem').innerText = data.content;
+
+            // 填入朝代 · 作者（如 “唐代 · 李白”）
+            const dynasty = data.origin.dynasty || '';
+            const author = data.origin.author || '佚名';
+            document.getElementById('info').innerText = '—— ' + dynasty + ' · ' + author;
+        }
+
+        // 加载失败或超时时的备用诗句
+        function fallback() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('poem').style.display = 'block';
+            document.getElementById('info').style.display = 'block';
+            document.getElementById('poem').innerText = '床前明月光，疑是地上霜。';
+            document.getElementById('info').innerText = '—— 唐代 · 李白';
+        }
+
+        // 设置一个 3 秒的超时，防止加载卡住
+        const fallbackTimer = setTimeout(fallback, 3000);
+
+        // 调用官方 SDK 获取诗句
+        jinrishici.load(function(result) {
+            clearTimeout(fallbackTimer);  // 取消超时
+            if (result.status === 'success' && result.data) {
+                showPoem(result.data);
+            } else {
+                fallback();
+            }
+        });
+    </script>
+</body>
+</html>
